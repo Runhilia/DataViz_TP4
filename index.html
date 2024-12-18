@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script type="text/javascript" src="/function.js"></script>
+  <style>
+    body {
+      margin: 0;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+    path:hover {
+        fill: #666;
+    }
+    .hidden {
+        display: none;
+    }
+    div.tooltip {
+        color: #222;
+        background-color: #fff;
+        padding: .5em;
+        text-shadow: #f5f5f5 0 1px 0;
+        border-radius: 2px;
+        opacity: 0.9;
+        position: absolute;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Dataviz TP4</h1>
+
+  <script>
+    var nodes = []
+    var edges = []
+    fetch('/got_social_graph.json')
+    .then(response => response.json())
+    .then(data => {
+      nodes = data.nodes
+      edges = data.links
+      
+    })
+
+    console.log(nodes)
+
+    const margin = { top: 0, right: 30, bottom: 20, left: 10 },
+    width = 960,
+    height = 960;
+
+    var svg = d3.select("#visu-tp4")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            
+
+    adjancencymatrix = createAdjacencyMatrix(nodes, edges)
+    console.log(adjancencymatrix)
+
+  </script>
+
+
+</body>
