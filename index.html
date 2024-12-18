@@ -1,68 +1,111 @@
-<!DOCTYPE html>
-<head>
-  <meta charset="utf-8" />
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script type="text/javascript" src="/function.js"></script>
-  <style>
-    body {
-      margin: 0;
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    }
-    path:hover {
-        fill: #666;
-    }
-    .hidden {
-        display: none;
-    }
-    div.tooltip {
-        color: #222;
-        background-color: #fff;
-        padding: .5em;
-        text-shadow: #f5f5f5 0 1px 0;
-        border-radius: 2px;
-        opacity: 0.9;
-        position: absolute;
-    }
-  </style>
-</head>
+    <!DOCTYPE html>
+    <head>
+    <meta charset="utf-8" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="text/javascript" src="/function.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        div {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+    </head>
 
-<body>
-  <h1>Dataviz TP4</h1>
+    <body>
+        <h1>Dataviz TP4</h1>
+        <div id="visu-tp4"></div>
 
-  <script>
-    var nodes = []
-    var edges = []
-    fetch('/got_social_graph.json')
-    .then(response => response.json())
-    .then(data => {
-      nodes = data.nodes
-      edges = data.links
-      
-    })
+        <script>
+            fetch('/got_social_graph.json')
+            .then(response => response.json())
+            .then(data => {
+            var nodes = data.nodes;
+            var edges = data.links;
 
-    console.log(nodes)
+            const margin = { top: 60, right: 30, bottom: 20, left: 60},
+                width = 960,
+                height = 960;
 
-    const margin = { top: 0, right: 30, bottom: 20, left: 10 },
-    width = 960,
-    height = 960;
+                var svg = d3.select("#visu-tp4")
+                            .append("svg")
+                            .attr("width", width)
+                            .attr("height", height)
+                            .append("g")
+                            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                        
 
-    var svg = d3.select("#visu-tp4")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
+                adjancencymatrix = createAdjacencyMatrix(nodes, edges);
+
+                var maxWeight = d3.max(nodes, function(d){  
+                    return d.influence;
+                }); 
+                
+                var scale = d3.scaleQuantize() 
+                            .domain([0, maxWeight])
+                            .range(d3.schemeBlues[9]);
+
+                var zoneScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                var positionsPersonnages = d3.range(nodes.length);	// un tableau d'autant d'element que de personnages 
+                var echellexy = d3.scaleBand()
+                    .range([0, width]) // TODO correspond [0, largeur du dessin]
+                    .domain(positionsPersonnages) 
+                    .paddingInner(0.1) 
+                    .align(0)
+                    .round(true);
+
+
+                var labels = d3.select("svg")
                 .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                .attr("transform", "translate(60, 60)")
+                .style("font-size", "8px")
+                .style("font-family", "sans-serif");
+                        
+                var columns = labels
+                    .append("g")
+                    .selectAll()
+                    .data(nodes)
+                    .join("text")
+                    .attr("dx", 0)
+                    .attr("dy", function(d) { return echellexy(d.id) + echellexy.bandwidth() / 2; })
+                    .text(function(d) { return d.character; })
+                    .attr("transform", "rotate(-90)"); // on tourne tout l'axe de 90°
+                
+                var rows = labels
+                    .append("g")
+                    .selectAll()
+                    .data(nodes)
+                    .join("text")
+                    .attr("dx", 0)
+                    .attr("dy", function(d) { return echellexy(d.id) + echellexy.bandwidth() / 2; })
+                    .attr("text-anchor", "end")
+                    .text(function(d) { return d.character; });
+                
+                matrixViz = svg.selectAll("rect")
+                .data(adjancencymatrix)
+                .join("rect")
+                .attr("width", echellexy(5))
+                .attr("height", echellexy(5))
+                .attr("x", function (d) {
+                    return echellexy(d.x);
+                })
+                .attr("y", function (d) {
+                    return echellexy(d.y);
+                })  
+                .style("fill", function(d) {
+                    return d.zone_s === d.zone_t ? zoneScale(d.zone_s) : "#eee";
+                })
+                .attr("opacity", "100%");
+
+
+            })
 
             
 
-    adjancencymatrix = createAdjacencyMatrix(nodes, edges)
-    console.log(adjancencymatrix)
-
-  </script>
+        </script>
 
 
-</body>
+    </body>

@@ -27,16 +27,13 @@ var appearances = [
     nodes,
     edges,
     positions = appearances,
-    symetric = false
+    symetric = true
   ) {
     var edgeHash = {};
     for (x in edges) {
       var id = edges[x].source + "-" + edges[x].target;
       edgeHash[id] = edges[x];
     }
-
-    console.log(nodes);
-    console.log(edges);
   
     var matrix = [];
     //create all possible edges
