@@ -60,3 +60,146 @@ var appearances = [
     return matrix;
   }
   
+
+  var nodes = [];
+  var edges = [];
+  var adjancencymatrix = [];
+  var echellexy, rows, columns, matrixViz;
+
+  // On récupère les données du fichier JSON
+  fetch('/got_social_graph.json') 
+  .then(response => response.json()) 
+  .then(data => { 
+  nodes = data.nodes; // On récupère les noeuds
+  edges = data.links; // On récupère les liens
+  adjancencymatrix = createAdjacencyMatrix(nodes, edges); // On crée la matrice d'adjacence
+  creationVisualisation(); // On crée la visualisation
+  });
+
+  // Fonction qui crée la matrice d'adjacence
+  function creationVisualisation() {
+
+      const margin = { top: 60, right: 30, bottom: 20, left: 60},
+          width = 960,
+          height = 960;
+
+      var svg = d3.select("#visu-tp4")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+              
+
+      var maxWeight = d3.max(nodes, function(d){  
+          return d.influence;
+      }); 
+      
+      var scale = d3.scaleQuantize() 
+                  .domain([0, maxWeight])
+                  .range(d3.schemeBlues[9]);
+
+      var zoneScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+      var positionsPersonnages = d3.range(nodes.length);	// un tableau d'autant d'element que de personnages
+      echellexy = d3.scaleBand()
+          .range([0, width]) // TODO correspond [0, largeur du dessin]
+          .domain(positionsPersonnages) 
+          .paddingInner(0.1) 
+          .align(0)
+          .round(true);
+
+
+      var labels = d3.select("svg")
+                  .append("g")
+                  .attr("transform", "translate(60, 60)")
+                  .style("font-size", "8px")
+                  .style("font-family", "sans-serif");
+              
+      columns = labels
+          .append("g")
+          .selectAll()
+          .data(nodes)
+          .join("text")
+          .attr("dx", 0)
+          .attr("dy", function(d) { return echellexy(d.id)+5 ; })
+          .text(function(d) { return d.character; })
+          .attr("transform", "rotate(-90)"); // on tourne tout l'axe de 90°
+      
+      rows = labels
+          .append("g")
+          .selectAll()
+          .data(nodes)
+          .join("text")
+          .attr("dx", 0)
+          .attr("dy", function(d) { return echellexy(d.id)+5; })
+          .attr("text-anchor", "end")
+          .text(function(d) { return d.character; });
+      
+          
+      //let taille = width / nodes.length - echellexy.bandwidth() / 2;
+      matrixViz = svg.selectAll("rect")
+      .data(adjancencymatrix)
+      .join("rect")
+      .attr("width", 5)
+      .attr("height", 5)
+      .attr("x", function (d) {
+          return echellexy(parseInt(d.x));
+      })
+      .attr("y", function (d) {
+          return echellexy(parseInt(d.y));
+      })  
+      .style("fill", function(d) {
+          return d.zone_s === d.zone_t ? zoneScale(d.zone_s) : "#eee";
+      })
+      .style("fill-opacity", function(d) {
+          return parseInt(d.weight)/10;
+      })
+
+  }
+
+  // Fonction qui change l'affichage de la matrice
+  function changeApparence() {
+    var aff = document.getElementById("affichage").value;
+    switch(aff) {
+        case "apparence":
+            update(appearances);
+            break;
+        case "zone":
+            update(zones);
+            break;
+        case "influence":
+            update(influences);
+            break;
+        default:
+            break;
+    }
+  }
+
+  // Fonction qui modifie l'affichage de la matrice
+  function update(newPositions) {
+      echellexy.domain(newPositions);
+
+      rows
+        .transition()
+        .delay(200)
+        .duration(3000)
+        .attr("dy", function(d) { return echellexy(d.id)+5; });
+
+      columns
+        .transition()
+        .delay(200)
+        .duration(3000)
+        .attr("dy", function(d) { return echellexy(d.id)+5; });
+
+      matrixViz
+        .transition()
+        .delay(200)
+        .duration(3000)
+        .attr("x", function (d) {
+            return echellexy(parseInt(d.x));
+        })
+        .attr("y", function (d) {
+            return echellexy(parseInt(d.y));
+        });
+  }
