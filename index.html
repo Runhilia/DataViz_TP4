@@ -59,10 +59,10 @@
 
 
                 var labels = d3.select("svg")
-                .append("g")
-                .attr("transform", "translate(60, 60)")
-                .style("font-size", "8px")
-                .style("font-family", "sans-serif");
+                            .append("g")
+                            .attr("transform", "translate(60, 60)")
+                            .style("font-size", "8px")
+                            .style("font-family", "sans-serif");
                         
                 var columns = labels
                     .append("g")
@@ -70,7 +70,7 @@
                     .data(nodes)
                     .join("text")
                     .attr("dx", 0)
-                    .attr("dy", function(d) { return echellexy(d.id) + echellexy.bandwidth() / 2; })
+                    .attr("dy", function(d) { return echellexy(d.id)+5 ; })
                     .text(function(d) { return d.character; })
                     .attr("transform", "rotate(-90)"); // on tourne tout l'axe de 90°
                 
@@ -80,25 +80,29 @@
                     .data(nodes)
                     .join("text")
                     .attr("dx", 0)
-                    .attr("dy", function(d) { return echellexy(d.id) + echellexy.bandwidth() / 2; })
+                    .attr("dy", function(d) { return echellexy(d.id)+5; })
                     .attr("text-anchor", "end")
                     .text(function(d) { return d.character; });
                 
+                    
+                //let taille = width / nodes.length - echellexy.bandwidth() / 2;
                 matrixViz = svg.selectAll("rect")
                 .data(adjancencymatrix)
                 .join("rect")
-                .attr("width", echellexy(5))
-                .attr("height", echellexy(5))
+                .attr("width", 5)
+                .attr("height", 5)
                 .attr("x", function (d) {
-                    return echellexy(d.x);
+                    return echellexy(parseInt(d.x));
                 })
                 .attr("y", function (d) {
-                    return echellexy(d.y);
+                    return echellexy(parseInt(d.y));
                 })  
                 .style("fill", function(d) {
                     return d.zone_s === d.zone_t ? zoneScale(d.zone_s) : "#eee";
                 })
-                .attr("opacity", "100%");
+                .style("fill-opacity", function(d) {
+                    return parseInt(d.weight)/10;
+                })
 
 
             })
