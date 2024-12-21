@@ -67,7 +67,7 @@ var appearances = [
   var echellexy, rows, columns, matrixViz;
 
   // On récupère les données du fichier JSON
-  fetch('/got_social_graph.json') 
+  fetch('./got_social_graph.json') 
   .then(response => response.json()) 
   .then(data => { 
   nodes = data.nodes; // On récupère les noeuds
